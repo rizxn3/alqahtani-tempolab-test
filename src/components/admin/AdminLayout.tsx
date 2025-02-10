@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, ShoppingBag, FileText, LogOut } from "lucide-react";
+import { LayoutGrid, ShoppingBag, FileText, LogOut, Tags } from "lucide-react";
 import { Button } from "../ui/button";
 
 const AdminLayout = () => {
@@ -40,6 +40,13 @@ const AdminLayout = () => {
           >
             <FileText className="h-5 w-5" />
             Quotations
+          </Link>
+          <Link
+            to="/admin/categories"
+            className={`flex items-center gap-2 p-3 rounded-lg hover:bg-gray-100 ${isActive("/categories") ? "bg-gray-100" : ""}`}
+          >
+            <Tags className="h-5 w-5" />
+            Categories
           </Link>
           <Link
             to="/"

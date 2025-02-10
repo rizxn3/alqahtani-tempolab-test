@@ -98,7 +98,10 @@ const ProductsPage = () => {
             </div>
             <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
             <p className="text-gray-600 text-sm mb-2">{product.description}</p>
-            <p className="font-bold">${product.price.toFixed(2)}</p>
+            <p className="text-sm text-gray-600">
+              Part Number: {product.part_number}
+            </p>
+            <p className="font-bold mt-2">${product.price.toFixed(2)}</p>
             <div className="flex gap-2 mt-4">
               <Button
                 variant="outline"

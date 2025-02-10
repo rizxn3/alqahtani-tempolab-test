@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import Header from "./Header";
 import ProductGrid from "./ProductGrid";
+import BikeTypeGrid from "./BikeTypeGrid";
+import MadeTypeGrid from "./MadeTypeGrid";
+import { ChevronLeft } from "lucide-react";
 import CartDrawer from "./CartDrawer";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
@@ -13,14 +17,36 @@ interface CartItem {
   imageUrl: string;
 }
 
+interface CategoryState {
+  bikeType?: { id: string; name: string };
+  madeType?: { id: string; name: string };
+}
+
 const Home = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState<CategoryState>({});
+  const [bikeTypes, setBikeTypes] = useState<
+    Array<{ id: string; name: string; image_url: string }>
+  >([]);
+  const [madeTypes, setMadeTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem("cartItems");
     return savedCart ? JSON.parse(savedCart) : [];
   });
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data: bikeData } = await supabase.from("bike_types").select("*");
+      const { data: madeData } = await supabase.from("made_types").select("*");
+      setBikeTypes(bikeData || []);
+      setMadeTypes(madeData || []);
+    };
+    fetchCategories();
+  }, []);
 
   const handleAddToCart = (product: any) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
@@ -62,7 +88,6 @@ const Home = () => {
 
   const handleSearch = (searchTerm: string) => {
     setSearchQuery(searchTerm);
-    // Implement search logic
     console.log("Searching for", searchTerm);
   };
 
@@ -76,7 +101,53 @@ const Home = () => {
 
       <main className="pt-24 pb-12 px-4">
         <div className="max-w-7xl mx-auto">
-          <ProductGrid onAddToCart={handleAddToCart} />
+          {categories.bikeType ? (
+            <div className="mb-6">
+              <Button
+                variant="ghost"
+                className="mb-4"
+                onClick={() => setCategories({})}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back to Bike Types
+              </Button>
+              <h2 className="text-2xl font-bold mb-6">
+                {categories.bikeType.name}
+              </h2>
+
+              {!categories.madeType ? (
+                <MadeTypeGrid
+                  madeTypes={madeTypes}
+                  onSelect={(madeType) =>
+                    setCategories({ ...categories, madeType })
+                  }
+                />
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    className="mb-4"
+                    onClick={() =>
+                      setCategories({ bikeType: categories.bikeType })
+                    }
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Back to Made Types
+                  </Button>
+                  <ProductGrid
+                    bikeTypeId={categories.bikeType.id}
+                    madeTypeId={categories.madeType.id}
+                    onAddToCart={handleAddToCart}
+                  />
+                </>
+              )}
+            </div>
+          ) : (
+            <BikeTypeGrid
+              bikeTypes={bikeTypes}
+              onSelect={(bikeType) => setCategories({ bikeType })}
+            />
+          )}
         </div>
       </main>
 

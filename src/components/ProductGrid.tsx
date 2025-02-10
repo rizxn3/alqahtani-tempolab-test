@@ -11,16 +11,33 @@ interface Product {
 }
 
 interface ProductGridProps {
+  bikeTypeId?: string;
+  madeTypeId?: string;
   onAddToCart?: (product: Product) => void;
 }
 
-const ProductGrid = ({ onAddToCart }: ProductGridProps) => {
+const ProductGrid = ({
+  bikeTypeId,
+  madeTypeId,
+  onAddToCart,
+}: ProductGridProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase.from("products").select("*");
+      let query = supabase.from("products").select("*");
+
+      if (bikeTypeId) {
+        query = query.eq("bike_type_id", bikeTypeId);
+      }
+
+      if (madeTypeId) {
+        query = query.eq("made_type_id", madeTypeId);
+      }
+
+      const { data, error } = await query;
+
       if (error) {
         console.error("Error fetching products:", error);
       } else {
@@ -30,7 +47,7 @@ const ProductGrid = ({ onAddToCart }: ProductGridProps) => {
     };
 
     fetchProducts();
-  }, []);
+  }, [bikeTypeId, madeTypeId]);
 
   if (loading) {
     return (
@@ -49,7 +66,7 @@ const ProductGrid = ({ onAddToCart }: ProductGridProps) => {
             id={product.id}
             name={product.name}
             description={product.description || ""}
-            price={product.price}
+            part_number={product.part_number}
             imageUrl={product.image_url || ""}
             onAddToCart={() => onAddToCart?.(product)}
           />
